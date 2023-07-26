@@ -13,6 +13,9 @@ module.exports = {
     },
     colors: {
       'grayc': '#F5F3FF'
+    },
+    letterSpacing: {
+      '1': '1.25px'
     }
   },
   plugins: [],
