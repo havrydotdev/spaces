@@ -10,9 +10,11 @@ import GoogleIcon from "@/public/google.svg";
 import FacebookIcon from "@/public/facebook.svg";
 import { AuthInput } from "@/components/AuthInput/AuthInput";
 import { CustomButton } from "@/components";
-import { ChangeEvent, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-
+import { ChangeEvent, useEffect, useState } from "react";
+import { redirect, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { options } from "@/app/api";
 export default function SignIn({
   csrfToken,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
@@ -22,10 +24,12 @@ export default function SignIn({
 
   const { push } = useRouter();
 
-  const session = useSession();
-  if (session) {
-    push("/notes");
-  }
+  const { data: session } = useSession();
+  useEffect(() => {
+    if (session) {
+      push("/notes");
+    }
+  }, []);
 
   const [formValues, setFormValues] = useState({
     username: "",

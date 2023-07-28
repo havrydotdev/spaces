@@ -1,9 +1,9 @@
 import NextAuth, { DefaultSession } from "next-auth";
 
 interface IUser extends DefaultUser {
-  id?: string | null | undefined;
-  username?: string | null | undefined;
-  name?: string | null | undefined;
+  id: string;
+  username: string;
+  name: string;
   image?: string | null | undefined;
 }
 

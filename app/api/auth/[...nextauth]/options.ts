@@ -7,7 +7,7 @@ import { getUser } from "@/app/data/auth/user";
 export const options: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
-    signIn: "/auths/login",
+    signIn: "/auth/login",
   },
   session: {
     maxAge: 30 * 24 * 60 * 60,
