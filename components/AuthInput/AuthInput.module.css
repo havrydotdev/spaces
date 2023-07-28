@@ -1,0 +1,9 @@
+.auth-input::placeholder {
+    font-family: var(--font-sf);
+    font-weight: 500;
+    font-variant: all-small-caps;
+    color: #242424;
+    opacity: 0.5;
+    letter-spacing: 1.25px;   
+}
+

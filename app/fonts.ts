@@ -24,6 +24,7 @@ export const sf_pro = localFont({
       style: "normal",
     },
   ],
+  variable: "--font-sf",
 });
 
 export const prompt = Prompt({
