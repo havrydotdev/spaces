@@ -8,7 +8,7 @@ export default function RootLayout({
 }) {
   return (
     <>
-      <div className="flex mt-[37px] ml-[40px]">
+      <div className="flex mt-[37px] ml-[40px] max-sm:ml-[30px]">
         <PlanetIcon />
         <div className="flex flex-col justify-center">
           <SpacesIcon className="max-sm:hidden" />

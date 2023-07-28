@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { sf_pro } from "./fonts";
+import AuthProvider from "@/components/AuthProvider/AuthProvider";
 
 export const metadata: Metadata = {
   title: "Hello Spaces!",
@@ -14,7 +15,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={sf_pro.className}>{children}</body>
+      <body className={sf_pro.className}>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

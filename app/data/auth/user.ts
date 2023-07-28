@@ -1,20 +1,12 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase";
-import { User } from "@/types";
 
 const users = collection(db, "users");
 
 export const getUser = async (
   username: string | undefined,
   password: string | undefined
-): Promise<User | null> => {
+): Promise<any | null> => {
   if (username == undefined || password == undefined) {
     return null;
   }
@@ -26,9 +18,10 @@ export const getUser = async (
 
   const response = await getDocs(q);
 
-  const userData = response.docs[0].data();
+  const userData = response.docs[0];
 
-  if (!userData) {
+  if (!userData.data()) {
+    console.log("data in null");
     return null;
   }
 
