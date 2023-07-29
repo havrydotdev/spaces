@@ -11,10 +11,9 @@ import FacebookIcon from "@/public/facebook.svg";
 import { AuthInput } from "@/components/AuthInput/AuthInput";
 import { CustomButton } from "@/components";
 import { ChangeEvent, useEffect, useState } from "react";
-import { redirect, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { options } from "@/app/api";
+
 export default function SignIn({
   csrfToken,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
@@ -24,12 +23,13 @@ export default function SignIn({
 
   const { push } = useRouter();
 
-  const { data: session } = useSession();
+  const { status } = useSession();
+
   useEffect(() => {
-    if (session) {
-      push("/notes");
+    if (status === "authenticated") {
+      void push("/notes");
     }
-  }, []);
+  }, [status]);
 
   const [formValues, setFormValues] = useState({
     username: "",

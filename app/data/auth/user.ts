@@ -1,7 +1,6 @@
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase";
-
-const users = collection(db, "users");
+import { users } from "..";
 
 export const getUser = async (
   username: string | undefined,
@@ -21,7 +20,7 @@ export const getUser = async (
   const userData = response.docs[0];
 
   if (!userData.data()) {
-    console.log("data in null");
+    console.log("data is null");
     return null;
   }
 

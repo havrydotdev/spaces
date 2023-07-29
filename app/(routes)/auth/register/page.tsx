@@ -1,13 +1,24 @@
 "use client";
 import { prompt } from "@/app/fonts";
 import { AuthInput, CustomButton } from "@/components";
+import { registerUser } from "@/server";
 import { GetServerSidePropsContext } from "next";
-import { signIn, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, useEffect, useState } from "react";
 
 export default function RegisterPage(): React.JSX.Element {
+  const { push } = useRouter();
+
+  const { status } = useSession();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      void push("/notes");
+    }
+  }, [status]);
+
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -16,16 +27,6 @@ export default function RegisterPage(): React.JSX.Element {
   });
 
   const [error, setError] = useState("");
-
-  const { push } = useRouter();
-
-  const { data: session } = useSession();
-  useEffect(() => {
-    if (session) {
-      push("/notes");
-      return;
-    }
-  }, []);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -40,19 +41,15 @@ export default function RegisterPage(): React.JSX.Element {
         return;
       }
 
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: form.username,
-          password: form.password,
-          name: form.name,
-        }),
+      const res = await registerUser({
+        username: form.username,
+        name: form.name,
+        password: form.password,
       });
 
       setForm({ username: "", password: "", name: "", confirm: "" });
       if (res.ok) {
-        push("/login");
+        push("/auth/login");
       }
     } catch (e) {
       if (e instanceof Error) {
@@ -64,14 +61,24 @@ export default function RegisterPage(): React.JSX.Element {
   return (
     <main className="w-screen flex justify-center">
       <div className="mx-[30px] sm:min-w-[480px] sm:max-w-[540px]">
-        <h1 className={`mt-[90px] ${prompt.className} font-medium text-[50px]`}>
+        <h1
+          className={`mt-[90px] ${prompt.className} font-medium text-[50px] ${
+            error && "mt-[30px]"
+          }`}
+        >
           Sign-up
         </h1>
         <form onSubmit={onSubmit} className="mt-[70px]">
           <input name="csrfToken" type="hidden" />
-          <AuthInput placeholder="Username" />
+          <AuthInput
+            placeholder="Username"
+            name="username"
+            type="text"
+            onChange={handleChange}
+          />
           <AuthInput
             placeholder="Full name"
+            name="name"
             type="text"
             className="mt-[15px]"
             onChange={handleChange}

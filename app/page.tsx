@@ -1,7 +1,7 @@
 import MainIcon from "@/public/main.svg";
 import Link from "next/link";
 
-export default function Home() {
+export default async function Home() {
   return (
     <main className="bg-[linear-gradient(180deg,_#7F6AFF_0%,_#5C4BC5_100%)] h-screen">
       <div className="block mx-[70px] pt-[40px] max-sm:mx-[20px]">
