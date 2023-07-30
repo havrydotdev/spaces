@@ -2,7 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { getUser } from "@/app/data/auth/user";
+import { getUser, getUserByEmail } from "@/app/data/users";
 
 export const options: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -18,7 +18,6 @@ export const options: NextAuthOptions = {
       session.user!.id = token.id;
       session.user!.image = token.image;
       session.user!.username = token.username;
-      session.user!.name = token.name;
       return session;
     },
     async jwt({ token, user }) {
@@ -27,9 +26,24 @@ export const options: NextAuthOptions = {
         token.id = user.id;
         token.image = user.image;
         token.username = user.username;
-        token.name = user.name;
       }
       return token;
+    },
+    async signIn({ user, account, profile }) {
+      if (account?.provider == "google") {
+        const u = await getUserByEmail(profile?.email);
+        if (!u) {
+          return "/?error=user_is_not_registered";
+        }
+
+        user.id = u.id;
+        user.username = u.username;
+        if (!user.image || user.image == "") {
+          user.image = u.image;
+        }
+      }
+
+      return true;
     },
   },
   providers: [

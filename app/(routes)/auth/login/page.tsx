@@ -3,57 +3,68 @@ import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
-import { getCsrfToken, signIn, useSession } from "next-auth/react";
+import { getCsrfToken, signIn } from "next-auth/react";
 import { prompt } from "@/app/fonts";
 import { AuthButton } from "@/components/AuthButton/AuthButton";
 import GoogleIcon from "@/public/google.svg";
 import FacebookIcon from "@/public/facebook.svg";
 import { AuthInput } from "@/components/AuthInput/AuthInput";
 import { CustomButton } from "@/components";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { getUserFriendyErrorText } from "@/utils";
 
 export default function SignIn({
   csrfToken,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  // get all search params from current url
   const searchParams = useSearchParams();
 
-  const callbackUrl = searchParams.get("callbackUrl") || "/notes";
+  // get callback url from search params
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
-  const { push } = useRouter();
+  // get error search param (redirected by auth handler if something goes wrong)
+  let errorFromServer = searchParams.get("error");
 
-  const { status } = useSession();
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      void push("/notes");
-    }
-  }, [status]);
-
+  // form values (updated by inputs)
   const [formValues, setFormValues] = useState({
-    username: "",
+    email: "",
     password: "",
   });
 
+  /**
+   * Gets event.target `name` param and sets form.{name} state to event.target `value`
+   * @param {ChangeEvent<HTMLInputElement>} event - event passed by onChange listener
+   */
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFormValues({ ...formValues, [name]: value });
   };
 
+  /**
+   * Checks if form.password == form.confirm and makes post request to sign in handler
+   * @param {React.FormEvent} e - event type passed by react`s onSubmit listener
+   */
   const onSubmit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
+
+      const formToSend = formValues;
+
+      // set form values before sending request
+      setFormValues({ password: "", email: "" });
+
+      e.preventDefault();
       const res = await signIn("credentials", {
         redirect: false,
-        username: formValues.username,
-        password: formValues.password,
+        email: formToSend.email,
+        password: formToSend.password,
         callbackUrl,
       });
 
-      setFormValues({ username: "", password: "" });
-      if (res?.ok) {
-        push(callbackUrl);
+      setFormValues({ email: "", password: "" });
+      if (!res?.ok) {
+        console.log(res?.error);
       }
     } catch (e) {
       console.log(e);
@@ -63,6 +74,7 @@ export default function SignIn({
   return (
     <main className="w-screen flex justify-center">
       <div className="mx-[30px] sm:min-w-[480px]">
+        {errorFromServer && <p>{getUserFriendyErrorText(errorFromServer)}</p>}
         <h1 className={`mt-[78px] ${prompt.className} font-medium text-[50px]`}>
           Sign-in
         </h1>
@@ -81,7 +93,7 @@ export default function SignIn({
         <div className="opacity-[0.20000000298023224] bg-[#242424] h-[1px] my-[42px]"></div>
         <form onSubmit={onSubmit}>
           <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
-          <AuthInput placeholder="Username" onChange={handleChange} />
+          <AuthInput placeholder="Email" onChange={handleChange} />
           <AuthInput
             placeholder="Password"
             type="password"
