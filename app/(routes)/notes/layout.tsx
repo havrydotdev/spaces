@@ -19,15 +19,14 @@ import {
 import TrashIcon from "@/public/trash.svg";
 import cn from "classnames";
 import { useRouter } from "next/navigation";
-
-export const metadata: Metadata = {
-  title: "Notes page",
-  description: "Fast and easy-to-use note taking website",
-};
+import SettingsIcon from "@/public/settings.svg";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function NotesLayout({ children }: { children: any }) {
+  const session = useSession();
   const { push } = useRouter();
   const [dirs, setDirs] = useState<Directory[]>([]);
   const { error, isLoading } = useSWR<Directory[]>("/api/dirs", fetcher, {
@@ -125,7 +124,7 @@ export default function NotesLayout({ children }: { children: any }) {
     <html lang="en">
       <body className={sf_pro.className}>
         <div className="flex">
-          <div className="min-w-[414px] border-r-[1px] border-[#D4D4D4] border-solid h-max m-0">
+          <div className="min-w-[414px] border-r-[1px] border-[#D4D4D4] border-solid h-screen m-0">
             <PlanetIcon className="mt-[36px] ml-[42px]" />
             {isLoading ? (
               <div className={styles.load}></div>
@@ -199,6 +198,28 @@ export default function NotesLayout({ children }: { children: any }) {
                         </p>
                       </div>
                     </button>
+                  </div>
+                </div>
+                <div className="fixed bottom-[33px] left-[42px] w-full">
+                  <div className="flex justify-between items-center max-w-[325px]">
+                    <div className="flex gap-[12px]">
+                      <Image
+                        src={session.data?.user?.image ?? "/public/user.png"}
+                        width={45}
+                        height={45}
+                        alt="user image"
+                        className="rounded-full"
+                      />
+                      <div>
+                        <h4 className="text-[18px] font-semibold text-[#242424]">
+                          {session.data?.user?.name}
+                        </h4>
+                        <h5 className="text-[16px] opacity-[0.5] text-[#242424]">
+                          @{session.data?.user?.username}
+                        </h5>
+                      </div>
+                    </div>
+                    <SettingsIcon className="cursor-pointer" />
                   </div>
                 </div>
               </>

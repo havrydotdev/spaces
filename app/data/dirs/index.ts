@@ -43,7 +43,11 @@ export const deleteDir = async (userId: string, dirId: number) => {
     throw new Error("User does not exist");
   }
 
+  const dirs = user.data()!.dirs;
+
+  dirs.splice(dirId, 1);
+
   await updateDoc(doc(users, userId), {
-    dirs: arrayRemove(user.data()!.dirs[dirId]),
+    dirs: dirs,
   });
 };
