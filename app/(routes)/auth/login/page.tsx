@@ -10,13 +10,11 @@ import GoogleIcon from "@/public/google.svg";
 import FacebookIcon from "@/public/facebook.svg";
 import { AuthInput } from "@/components/AuthInput/AuthInput";
 import { CustomButton } from "@/components";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getUserFriendyErrorText } from "@/utils";
 
-export default function SignIn({
-  csrfToken,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function SignIn({}) {
   // get all search params from current url
   const searchParams = useSearchParams();
 
@@ -92,7 +90,6 @@ export default function SignIn({
         </div>
         <div className="opacity-[0.20000000298023224] bg-[#242424] h-[1px] my-[42px]"></div>
         <form onSubmit={onSubmit}>
-          <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
           <AuthInput placeholder="Email" onChange={handleChange} />
           <AuthInput
             placeholder="Password"
@@ -108,14 +105,4 @@ export default function SignIn({
       </div>
     </main>
   );
-}
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const csrfToken = await getCsrfToken(context);
-
-  return {
-    props: {
-      csrfToken,
-    },
-  };
 }
