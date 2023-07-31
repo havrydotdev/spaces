@@ -1,8 +1,4 @@
-import {
-  doc,
-  getDoc,
-  updateDoc,
-} from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { Note } from "@/types/data";
 import { users } from "../collections";
 
@@ -45,6 +41,26 @@ export const addNote = async (userId: string, dirId: number, note: Note) => {
   const dirs = response.data()!.dirs;
 
   dirs[dirId].notes.push(note);
+  await updateDoc(userRef, {
+    dirs: dirs,
+  });
+};
+
+export const deleteNote = async (
+  userId: string,
+  dirId: number,
+  noteId: number
+) => {
+  const userRef = doc(users, userId);
+  const user = await getDoc(userRef);
+  if (!user) {
+    return null;
+  }
+
+  const dirs = user.data()!.dirs;
+
+  dirs[dirId].notes.splice(noteId, 1);
+
   await updateDoc(userRef, {
     dirs: dirs,
   });

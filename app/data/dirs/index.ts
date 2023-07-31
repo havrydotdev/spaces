@@ -1,4 +1,10 @@
-import { arrayUnion, doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  arrayRemove,
+  arrayUnion,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { Directory } from "@/types/data";
 import { users } from "../collections";
 
@@ -28,5 +34,16 @@ export const getDirById = async (
 export const addDir = async (userId: string, dir: Directory): Promise<void> => {
   await updateDoc(doc(users, userId), {
     dirs: arrayUnion(dir),
+  });
+};
+
+export const deleteDir = async (userId: string, dirId: number) => {
+  const user = await getDoc(doc(users, userId));
+  if (!user) {
+    throw new Error("User does not exist");
+  }
+
+  await updateDoc(doc(users, userId), {
+    dirs: arrayRemove(user.data()!.dirs[dirId]),
   });
 };

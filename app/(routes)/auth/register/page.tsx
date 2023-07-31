@@ -24,6 +24,7 @@ export default function RegisterPage(): React.JSX.Element {
     password: "",
     name: "",
     confirm: "",
+    email: "",
   });
 
   const [error, setError] = useState("");
@@ -45,9 +46,10 @@ export default function RegisterPage(): React.JSX.Element {
         username: form.username,
         name: form.name,
         password: form.password,
+        email: form.email,
       });
 
-      setForm({ username: "", password: "", name: "", confirm: "" });
+      setForm({ username: "", password: "", name: "", confirm: "", email: "" });
       if (res.ok) {
         push("/auth/login");
       }
@@ -70,6 +72,12 @@ export default function RegisterPage(): React.JSX.Element {
         </h1>
         <form onSubmit={onSubmit} className="mt-[70px]">
           <input name="csrfToken" type="hidden" />
+          <AuthInput
+            placeholder="Email"
+            name="email"
+            type="text"
+            onChange={handleChange}
+          />
           <AuthInput
             placeholder="Username"
             name="username"
@@ -109,10 +117,4 @@ export default function RegisterPage(): React.JSX.Element {
       </div>
     </main>
   );
-}
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  return {
-    props: {},
-  };
 }
