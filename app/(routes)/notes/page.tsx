@@ -1,25 +1,24 @@
 "use client";
-import { setCookie } from "cookies-next";
-import { getSession, useSession } from "next-auth/react";
-import { useEffect } from "react";
+import {
+  GetServerSideProps,
+  GetServerSidePropsContext,
+  InferGetServerSidePropsType,
+} from "next";
 
-export default function NotesPage({
-  pageVisited,
-}: {
-  pageVisited: boolean | null;
-}): React.JSX.Element {
-  const { data: session } = useSession();
-  useEffect(() => {
-    if (!pageVisited) {
-      setCookie("pageVisited", true);
-    }
-  }, []);
+const NotesPage = ({
+  active,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) => {};
 
-  return <div>Content</div>;
-}
+export const getServerSideProps: GetServerSideProps<{
+  active: string | undefined;
+}> = async (ctx: GetServerSidePropsContext) => {
+  const active = ctx.req.cookies["active_dir"];
 
-export const getServerSideProps = async (ctx: any) => {
-  const { pageVisited } = ctx.req.cookies;
-
-  return { props: { pageVisited: pageVisited ?? null } };
+  return {
+    props: {
+      active,
+    },
+  };
 };
+
+export default NotesPage;
