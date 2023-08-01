@@ -11,10 +11,13 @@ import FacebookIcon from "@/public/facebook.svg";
 import { AuthInput } from "@/components/AuthInput/AuthInput";
 import { CustomButton } from "@/components";
 import { ChangeEvent, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getUserFriendyErrorText } from "@/utils";
 
-export default function SignIn({}) {
+export default function SignIn({
+  csrfToken,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const { push } = useRouter();
   // get all search params from current url
   const searchParams = useSearchParams();
 
@@ -46,13 +49,11 @@ export default function SignIn({}) {
   const onSubmit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-
       const formToSend = formValues;
 
       // set form values before sending request
       setFormValues({ password: "", email: "" });
 
-      e.preventDefault();
       const res = await signIn("credentials", {
         redirect: false,
         email: formToSend.email,
@@ -60,9 +61,10 @@ export default function SignIn({}) {
         callbackUrl,
       });
 
-      setFormValues({ email: "", password: "" });
       if (!res?.ok) {
         console.log(res?.error);
+      } else {
+        push("/notes/0");
       }
     } catch (e) {
       console.log(e);
@@ -90,12 +92,18 @@ export default function SignIn({}) {
         </div>
         <div className="opacity-[0.20000000298023224] bg-[#242424] h-[1px] my-[42px]"></div>
         <form onSubmit={onSubmit}>
-          <AuthInput placeholder="Email" onChange={handleChange} />
+          <input type="hidden" value={csrfToken} />
+          <AuthInput
+            placeholder="Email"
+            onChange={handleChange}
+            value={formValues.email}
+          />
           <AuthInput
             placeholder="Password"
             type="password"
             className="mt-[21px]"
             onChange={handleChange}
+            value={formValues.password}
           />
           <div className="flex mt-[61px] sm:gap-[23px] justify-center max-sm:flex-col max-sm:items-center max-sm:gap-[15px] max-sm:mt-[80px]">
             <CustomButton text="Login" color="primary" type="submit" />
@@ -106,3 +114,13 @@ export default function SignIn({}) {
     </main>
   );
 }
+
+export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
+  const csrfToken = await getCsrfToken(ctx);
+
+  return {
+    props: {
+      csrfToken,
+    },
+  };
+};

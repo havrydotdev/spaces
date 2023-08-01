@@ -58,10 +58,10 @@ export const options: NextAuthOptions = {
     CredentialsProvider({
       name: "Spaces Account",
       credentials: {
-        username: {
-          label: "Username",
+        email: {
+          label: "Emial",
           type: "text",
-          placeholder: "Username",
+          placeholder: "email",
         },
         password: {
           label: "Password",
@@ -70,19 +70,8 @@ export const options: NextAuthOptions = {
         },
       },
       async authorize(credentials) {
-        return await getUser(credentials?.username, credentials?.password);
+        return await getUser(credentials?.email, credentials?.password);
       },
     }),
   ],
-  logger: {
-    error(code, metadata) {
-      console.log(code, metadata);
-    },
-    warn(code) {
-      console.log(code);
-    },
-    debug(code, metadata) {
-      console.log(code, metadata);
-    },
-  },
 };

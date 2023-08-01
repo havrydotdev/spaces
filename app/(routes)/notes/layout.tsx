@@ -9,7 +9,7 @@ import PlusIcon from "@/public/plus.svg";
 import { getCookie } from "cookies-next";
 import styles from "./layout.module.css";
 import NewNoteIcon from "@/public/new_note.svg";
-import { useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import {
   addNewDir,
   addNewNote,
@@ -22,33 +22,45 @@ import { useRouter } from "next/navigation";
 import SettingsIcon from "@/public/settings.svg";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export const NotesContext = createContext<{
+  dirs: Directory[];
+  activeDir: number;
+  activeNote: number;
+}>({
+  dirs: [],
+  activeDir: 0,
+  activeNote: 0,
+});
 
 export default function NotesLayout({ children }: { children: any }) {
   const session = useSession();
   const { push } = useRouter();
   const [dirs, setDirs] = useState<Directory[]>([]);
+  const [activeDir, setActiveDir] = useState<number>(0);
+  const [activeNote, setActiveNote] = useState<number>(0);
   const { error, isLoading } = useSWR<Directory[]>("/api/dirs", fetcher, {
     onSuccess(data) {
       setDirs(data);
     },
   });
 
-  const dir = getCookie("active_dir");
+  useEffect(() => {
+    const dir = getCookie("active_dir");
 
-  const note = getCookie("active_note");
+    const note = getCookie("active_note");
 
-  let activeDir = 0;
+    if (dir !== undefined && dir !== null) {
+      setActiveDir(parseInt(dir.toString()));
+    }
 
-  let activeNote = 0;
-  if (dir !== undefined && dir !== null) {
-    activeDir = parseInt(dir.toString());
-  }
-
-  if (note !== undefined && note !== null) {
-    activeNote = parseInt(note.toString());
-  }
+    if (note !== undefined && note !== null) {
+      setActiveNote(parseInt(note.toString()));
+    }
+  }, []);
 
   if (error)
     return (
@@ -114,7 +126,7 @@ export default function NotesLayout({ children }: { children: any }) {
     );
 
     if (dirId == activeDir) {
-      push("/notes/0");
+      setActiveDir(0);
     }
 
     await deleteNoteFromDB(dirId, noteId);
@@ -140,7 +152,7 @@ export default function NotesLayout({ children }: { children: any }) {
                 </div>
                 <div className="flex flex-col gap-5px mt-[16px] ml-[42px]">
                   {dirs.map((dir, index) => (
-                    <a
+                    <button
                       className={cn(
                         "flex items-center text-[18px] h-[41px] w-[325px] rounded-lg text-[#242424] justify-between",
                         styles.dir,
@@ -149,14 +161,17 @@ export default function NotesLayout({ children }: { children: any }) {
                         }
                       )}
                       key={index}
-                      href={`/notes/${index}`}
+                      onClick={() => {
+                        setActiveDir(index);
+                        setActiveNote(0);
+                      }}
                     >
                       <p className="ml-[10px]">{dir.name}</p>
                       <TrashIcon
                         className={`mr-[10px] opacity-0 transition-all cursor-pointer`}
                         onClick={() => deleteDir(index)}
                       />
-                    </a>
+                    </button>
                   ))}
                   <div className="flex justify-between text-[18px] font-medium small-caps opacity-[0.5] text-[#242424] mt-[48px]">
                     <h4>Notes</h4>
@@ -173,14 +188,14 @@ export default function NotesLayout({ children }: { children: any }) {
                         )}
                         key={index}
                       >
-                        <a
+                        <button
                           className={cn(
                             "flex justify-between items-center w-[90%] text-[18px] text-[#242424]"
                           )}
-                          href={`/notes/${activeDir}/${index}`}
+                          onClick={() => setActiveNote(index)}
                         >
                           <p className="ml-[10px]">{note.title}</p>
-                        </a>
+                        </button>
                         <TrashIcon
                           className={`mr-[10px] opacity-0 transition-all cursor-pointer`}
                           onClick={() => deleteNote(activeDir, index)}
@@ -225,7 +240,15 @@ export default function NotesLayout({ children }: { children: any }) {
               </>
             )}
           </div>
-          <AuthProvider>{children}</AuthProvider>
+          <NotesContext.Provider
+            value={{
+              dirs: dirs,
+              activeDir: activeDir,
+              activeNote: activeNote,
+            }}
+          >
+            <AuthProvider>{children}</AuthProvider>
+          </NotesContext.Provider>
         </div>
       </body>
     </html>

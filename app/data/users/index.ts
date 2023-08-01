@@ -3,15 +3,15 @@ import { users } from "../collections";
 import { User } from "next-auth";
 
 export const getUser = async (
-  username: string | undefined,
+  email: string | undefined,
   password: string | undefined
 ): Promise<any | null> => {
-  if (username == undefined || password == undefined) {
+  if (email == undefined || password == undefined) {
     return null;
   }
   const q = query(
     users,
-    where("username", "==", username),
+    where("email", "==", email),
     where("password", "==", password)
   );
 

@@ -1,4 +1,4 @@
-import { ChangeEvent } from "react";
+import { ChangeEvent, ClassAttributes, LegacyRef } from "react";
 
 export interface AuthInputProps {
   placeholder: string;
@@ -6,4 +6,5 @@ export interface AuthInputProps {
   className?: string;
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   name?: string;
+  value: string;
 }

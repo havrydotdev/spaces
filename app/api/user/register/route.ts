@@ -6,7 +6,17 @@ export const POST = async (req: Request) => {
   const body = await req.json();
 
   await addDoc(users, {
-    dirs: [],
+    dirs: [
+      {
+        name: "Edit Me!",
+        notes: [
+          {
+            title: "Your First Note",
+            text: "Hello World! Edit me to start using Spaces!",
+          },
+        ],
+      },
+    ],
     username: body.username,
     name: body.name,
     password: body.password,
