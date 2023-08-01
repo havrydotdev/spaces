@@ -1,12 +1,11 @@
 "use client";
-import type { Metadata } from "next";
 import { sf_pro } from "@/app/fonts";
 import AuthProvider from "@/components/AuthProvider/AuthProvider";
 import { Directory, Note } from "@/types/data";
 import useSWR from "swr";
 import PlanetIcon from "@/public/planet.svg";
 import PlusIcon from "@/public/plus.svg";
-import { getCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 import styles from "./layout.module.css";
 import NewNoteIcon from "@/public/new_note.svg";
 import { createContext, useEffect, useState } from "react";
@@ -30,15 +29,17 @@ export const NotesContext = createContext<{
   dirs: Directory[];
   activeDir: number;
   activeNote: number;
+  isLoading: boolean;
 }>({
   dirs: [],
   activeDir: 0,
   activeNote: 0,
+  isLoading: true,
 });
 
 export default function NotesLayout({ children }: { children: any }) {
-  const session = useSession();
   const { push } = useRouter();
+  const session = useSession();
   const [dirs, setDirs] = useState<Directory[]>([]);
   const [activeDir, setActiveDir] = useState<number>(0);
   const [activeNote, setActiveNote] = useState<number>(0);
@@ -62,7 +63,15 @@ export default function NotesLayout({ children }: { children: any }) {
     }
   }, []);
 
-  if (error)
+  useEffect(() => {
+    setCookie("active_dir", activeDir);
+  }, [activeDir]);
+
+  useEffect(() => {
+    setCookie("active_note", activeNote);
+  }, [activeNote]);
+
+  if (error) {
     return (
       <html lang="en">
         <body className={sf_pro.className}>
@@ -71,6 +80,38 @@ export default function NotesLayout({ children }: { children: any }) {
         </body>
       </html>
     );
+  }
+
+  if (session.status == "loading" || isLoading) {
+    return (
+      <html lang="en">
+        <body className={sf_pro.className}>
+          <div className="flex">
+            <div className="min-w-[414px] border-r-[1px] border-[#D4D4D4] border-solid h-screen m-0">
+              <Link className="inline-block mt-[36px] ml-[42px]" href="/">
+                <PlanetIcon />
+              </Link>
+              <div className={styles.load}></div>
+            </div>
+            <NotesContext.Provider
+              value={{
+                dirs: dirs,
+                activeDir: activeDir,
+                activeNote: activeNote,
+                isLoading: isLoading,
+              }}
+            >
+              <AuthProvider>{children}</AuthProvider>
+            </NotesContext.Provider>
+          </div>
+        </body>
+      </html>
+    );
+  }
+
+  if (session.status == "unauthenticated") {
+    push("/");
+  }
 
   const addNote = async () => {
     const newNote: Note = {
@@ -107,7 +148,7 @@ export default function NotesLayout({ children }: { children: any }) {
     setDirs((drs) => drs.filter((dr, i) => i !== dirId));
 
     if (dirId == activeDir) {
-      push("/notes/0");
+      setActiveDir(0);
     }
 
     await deleteDirFromDB(dirId);
@@ -125,8 +166,8 @@ export default function NotesLayout({ children }: { children: any }) {
       )
     );
 
-    if (dirId == activeDir) {
-      setActiveDir(0);
+    if (noteId == activeNote) {
+      setActiveNote(0);
     }
 
     await deleteNoteFromDB(dirId, noteId);
@@ -137,114 +178,113 @@ export default function NotesLayout({ children }: { children: any }) {
       <body className={sf_pro.className}>
         <div className="flex">
           <div className="min-w-[414px] border-r-[1px] border-[#D4D4D4] border-solid h-screen m-0">
-            <PlanetIcon className="mt-[36px] ml-[42px]" />
-            {isLoading ? (
-              <div className={styles.load}></div>
-            ) : (
-              <>
-                <div className="flex mt-[46px] w-[325px] ml-[42px] text-[18px] font-medium opacity-[0.5] text-[#242424] small-caps justify-between">
-                  <h4>Lists</h4>
-                  <div className="flex flex-col justify-center">
-                    <button onClick={addDir}>
-                      <PlusIcon className="cursor-pointer" />
-                    </button>
-                  </div>
+            <Link className="inline-block mt-[36px] ml-[42px]" href="/">
+              <PlanetIcon />
+            </Link>
+            <>
+              <div className="flex mt-[46px] w-[325px] ml-[42px] text-[18px] font-medium opacity-[0.5] text-[#242424] small-caps justify-between">
+                <h4>Lists</h4>
+                <div className="flex flex-col justify-center">
+                  <button onClick={addDir}>
+                    <PlusIcon className="cursor-pointer" />
+                  </button>
                 </div>
-                <div className="flex flex-col gap-5px mt-[16px] ml-[42px]">
-                  {dirs.map((dir, index) => (
-                    <button
+              </div>
+              <div className="flex flex-col gap-5px mt-[16px] ml-[42px]">
+                {dirs.map((dir, index) => (
+                  <button
+                    className={cn(
+                      "flex items-center text-[18px] h-[41px] w-[325px] rounded-lg text-[#242424] justify-between",
+                      styles.dir,
+                      {
+                        ["bg-[#F8F8F8]"]: index === activeDir,
+                      }
+                    )}
+                    key={index}
+                    onClick={() => {
+                      setActiveDir(index);
+                      setActiveNote(0);
+                    }}
+                  >
+                    <p className="ml-[10px]">{dir.name}</p>
+                    <TrashIcon
+                      className={`mr-[10px] opacity-0 transition-all cursor-pointer`}
+                      onClick={() => deleteDir(index)}
+                    />
+                  </button>
+                ))}
+                <div className="flex justify-between text-[18px] font-medium small-caps opacity-[0.5] text-[#242424] mt-[48px]">
+                  <h4>Notes</h4>
+                </div>
+                <div className="flex flex-col gap-5px mt-[16px]">
+                  {dirs[activeDir]?.notes.map((note, index) => (
+                    <div
                       className={cn(
-                        "flex items-center text-[18px] h-[41px] w-[325px] rounded-lg text-[#242424] justify-between",
+                        "flex justify-between items-center h-[41px] w-[325px] rounded-lg",
                         styles.dir,
                         {
-                          ["bg-[#F8F8F8]"]: index === activeDir,
+                          ["bg-[#F8F8F8]"]: index === activeNote,
                         }
                       )}
                       key={index}
-                      onClick={() => {
-                        setActiveDir(index);
-                        setActiveNote(0);
-                      }}
                     >
-                      <p className="ml-[10px]">{dir.name}</p>
+                      <button
+                        className={cn(
+                          "flex justify-between items-center w-[90%] text-[18px] text-[#242424]"
+                        )}
+                        onClick={() => setActiveNote(index)}
+                      >
+                        <p className="ml-[10px]">{note.title}</p>
+                      </button>
                       <TrashIcon
                         className={`mr-[10px] opacity-0 transition-all cursor-pointer`}
-                        onClick={() => deleteDir(index)}
+                        onClick={() => deleteNote(activeDir, index)}
                       />
-                    </button>
-                  ))}
-                  <div className="flex justify-between text-[18px] font-medium small-caps opacity-[0.5] text-[#242424] mt-[48px]">
-                    <h4>Notes</h4>
-                  </div>
-                  <div className="flex flex-col gap-5px mt-[16px]">
-                    {dirs[activeDir]?.notes.map((note, index) => (
-                      <div
-                        className={cn(
-                          "flex justify-between items-center h-[41px] w-[325px] rounded-lg",
-                          styles.dir,
-                          {
-                            ["bg-[#F8F8F8]"]: index === activeNote,
-                          }
-                        )}
-                        key={index}
-                      >
-                        <button
-                          className={cn(
-                            "flex justify-between items-center w-[90%] text-[18px] text-[#242424]"
-                          )}
-                          onClick={() => setActiveNote(index)}
-                        >
-                          <p className="ml-[10px]">{note.title}</p>
-                        </button>
-                        <TrashIcon
-                          className={`mr-[10px] opacity-0 transition-all cursor-pointer`}
-                          onClick={() => deleteNote(activeDir, index)}
-                        />
-                      </div>
-                    ))}
-                    <button
-                      className={`flex items-center text-[18px] h-[41px] w-[325px] rounded-lg text-[#242424] mt-[15px]`}
-                      onClick={addNote}
-                    >
-                      <div className="flex gap-[10px] rounded-lg border-[1px] border-[#BEBEBE] h-[41px] w-[325px] items-center">
-                        <NewNoteIcon className="ml-[10px]" />
-                        <p className="text-[#BEBEBE] text-[20px] font-normal">
-                          New note
-                        </p>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-                <div className="fixed bottom-[33px] left-[42px] w-full">
-                  <div className="flex justify-between items-center max-w-[325px]">
-                    <div className="flex gap-[12px]">
-                      <Image
-                        src={session.data?.user?.image ?? "/public/user.png"}
-                        width={45}
-                        height={45}
-                        alt="user image"
-                        className="rounded-full"
-                      />
-                      <div>
-                        <h4 className="text-[18px] font-semibold text-[#242424]">
-                          {session.data?.user?.name}
-                        </h4>
-                        <h5 className="text-[16px] opacity-[0.5] text-[#242424]">
-                          @{session.data?.user?.username}
-                        </h5>
-                      </div>
                     </div>
-                    <SettingsIcon className="cursor-pointer" />
-                  </div>
+                  ))}
+                  <button
+                    className={`flex items-center text-[18px] h-[41px] w-[325px] rounded-lg text-[#242424] mt-[15px]`}
+                    onClick={addNote}
+                  >
+                    <div className="flex gap-[10px] rounded-lg border-[1px] border-[#BEBEBE] h-[41px] w-[325px] items-center">
+                      <NewNoteIcon className="ml-[10px]" />
+                      <p className="text-[#BEBEBE] text-[20px] font-normal">
+                        New note
+                      </p>
+                    </div>
+                  </button>
                 </div>
-              </>
-            )}
+              </div>
+              <div className="fixed bottom-[33px] left-[42px] w-full">
+                <div className="flex justify-between items-center max-w-[325px]">
+                  <div className="flex gap-[12px]">
+                    <Image
+                      src={session.data?.user?.image ?? "/public/user.png"}
+                      width={45}
+                      height={45}
+                      alt="user image"
+                      className="rounded-full"
+                    />
+                    <div>
+                      <h4 className="text-[18px] font-semibold text-[#242424]">
+                        {session.data?.user?.name ?? "Unknown user"}
+                      </h4>
+                      <h5 className="text-[16px] opacity-[0.5] text-[#242424]">
+                        @{session.data?.user?.username ?? "username"}
+                      </h5>
+                    </div>
+                  </div>
+                  <SettingsIcon className="cursor-pointer" />
+                </div>
+              </div>
+            </>
           </div>
           <NotesContext.Provider
             value={{
               dirs: dirs,
               activeDir: activeDir,
               activeNote: activeNote,
+              isLoading: isLoading,
             }}
           >
             <AuthProvider>{children}</AuthProvider>

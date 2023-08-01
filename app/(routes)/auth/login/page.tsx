@@ -14,9 +14,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getUserFriendyErrorText } from "@/utils";
 
-export default function SignIn({
-  csrfToken,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function SignIn() {
   const { push } = useRouter();
   // get all search params from current url
   const searchParams = useSearchParams();
@@ -64,7 +62,7 @@ export default function SignIn({
       if (!res?.ok) {
         console.log(res?.error);
       } else {
-        push("/notes/0");
+        push("/notes");
       }
     } catch (e) {
       console.log(e);
@@ -92,7 +90,6 @@ export default function SignIn({
         </div>
         <div className="opacity-[0.20000000298023224] bg-[#242424] h-[1px] my-[42px]"></div>
         <form onSubmit={onSubmit}>
-          <input type="hidden" value={csrfToken} />
           <AuthInput
             placeholder="Email"
             onChange={handleChange}
@@ -114,13 +111,3 @@ export default function SignIn({
     </main>
   );
 }
-
-export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
-  const csrfToken = await getCsrfToken(ctx);
-
-  return {
-    props: {
-      csrfToken,
-    },
-  };
-};
