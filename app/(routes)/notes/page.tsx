@@ -1,6 +1,6 @@
 "use client";
-import {
-  InferGetServerSidePropsType,
-} from "next";
+import { InferGetServerSidePropsType } from "next";
 
-const NotesPage = () => {};
+const NotesPage = () => {
+  return <div></div>;
+};
