@@ -6,9 +6,14 @@ import useSWR from "swr";
 import PlanetIcon from "@/public/planet.svg";
 import PlusIcon from "@/public/plus.svg";
 import { getCookie, setCookie } from "cookies-next";
-import styles from "./layout.module.css";
 import NewNoteIcon from "@/public/new_note.svg";
-import { createContext, useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  createContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   addNewDir,
   addNewNote,
@@ -22,6 +27,7 @@ import SettingsIcon from "@/public/settings.svg";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { ItemTab } from "@/components/ItemTab/ItemTab";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -30,11 +36,13 @@ export const NotesContext = createContext<{
   activeDir: number;
   activeNote: number;
   isLoading: boolean;
+  setDirs: Dispatch<SetStateAction<Directory[]>>;
 }>({
   dirs: [],
   activeDir: 0,
   activeNote: 0,
   isLoading: true,
+  setDirs: () => {},
 });
 
 export default function NotesLayout({ children }: { children: any }) {
@@ -91,7 +99,7 @@ export default function NotesLayout({ children }: { children: any }) {
               <Link className="inline-block mt-[36px] ml-[42px]" href="/">
                 <PlanetIcon />
               </Link>
-              <div className={styles.load}></div>
+              <div className="load"></div>
             </div>
             <NotesContext.Provider
               value={{
@@ -99,6 +107,7 @@ export default function NotesLayout({ children }: { children: any }) {
                 activeDir: activeDir,
                 activeNote: activeNote,
                 isLoading: isLoading,
+                setDirs: setDirs,
               }}
             >
               <AuthProvider>{children}</AuthProvider>
@@ -145,11 +154,11 @@ export default function NotesLayout({ children }: { children: any }) {
   };
 
   const deleteDir = async (dirId: number) => {
-    setDirs((drs) => drs.filter((dr, i) => i !== dirId));
-
-    if (dirId == activeDir) {
+    if (dirId === activeDir) {
       setActiveDir(0);
     }
+
+    setDirs((drs) => drs.filter((dr, i) => i !== dirId));
 
     await deleteDirFromDB(dirId);
   };
@@ -192,26 +201,18 @@ export default function NotesLayout({ children }: { children: any }) {
               </div>
               <div className="flex flex-col gap-5px mt-[16px] ml-[42px]">
                 {dirs.map((dir, index) => (
-                  <button
-                    className={cn(
-                      "flex items-center text-[18px] h-[41px] w-[325px] rounded-lg text-[#242424] justify-between",
-                      styles.dir,
-                      {
-                        ["bg-[#F8F8F8]"]: index === activeDir,
-                      }
-                    )}
+                  <ItemTab
                     key={index}
                     onClick={() => {
                       setActiveDir(index);
                       setActiveNote(0);
                     }}
-                  >
-                    <p className="ml-[10px]">{dir.name}</p>
-                    <TrashIcon
-                      className={`mr-[10px] opacity-0 transition-all cursor-pointer`}
-                      onClick={() => deleteDir(index)}
-                    />
-                  </button>
+                    className={cn({
+                      ["bg-[#F8F8F8]"]: index === activeDir,
+                    })}
+                    title={dir.name}
+                    onDelete={() => deleteDir(index)}
+                  />
                 ))}
                 <div className="flex justify-between text-[18px] font-medium small-caps opacity-[0.5] text-[#242424] mt-[48px]">
                   <h4>Notes</h4>
@@ -220,8 +221,7 @@ export default function NotesLayout({ children }: { children: any }) {
                   {dirs[activeDir]?.notes.map((note, index) => (
                     <div
                       className={cn(
-                        "flex justify-between items-center h-[41px] w-[325px] rounded-lg",
-                        styles.dir,
+                        "flex justify-between items-center h-[41px] w-[325px] rounded-lg dir",
                         {
                           ["bg-[#F8F8F8]"]: index === activeNote,
                         }
@@ -285,6 +285,7 @@ export default function NotesLayout({ children }: { children: any }) {
               activeDir: activeDir,
               activeNote: activeNote,
               isLoading: isLoading,
+              setDirs: setDirs,
             }}
           >
             <AuthProvider>{children}</AuthProvider>

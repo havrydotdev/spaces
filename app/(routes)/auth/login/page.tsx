@@ -1,9 +1,5 @@
 "use client";
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-} from "next";
-import { getCsrfToken, signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { prompt } from "@/app/fonts";
 import { AuthButton } from "@/components/AuthButton/AuthButton";
 import GoogleIcon from "@/public/google.svg";
@@ -15,6 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getUserFriendyErrorText } from "@/utils";
 
 export default function SignIn() {
+  const session = useSession();
   const { push } = useRouter();
   // get all search params from current url
   const searchParams = useSearchParams();
@@ -30,6 +27,20 @@ export default function SignIn() {
     email: "",
     password: "",
   });
+
+  if (session.status == "loading") {
+    return (
+      <main className="w-screen flex justify-center">
+        <div className="mx-[30px] sm:min-w-[480px]">
+          <div className="load"></div>
+        </div>
+      </main>
+    );
+  }
+
+  if (session.status == "authenticated") {
+    push("/notes");
+  }
 
   /**
    * Gets event.target `name` param and sets form.{name} state to event.target `value`

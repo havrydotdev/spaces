@@ -65,3 +65,26 @@ export const deleteNote = async (
     dirs: dirs,
   });
 };
+
+export const updateNote = async (
+  userId: string,
+  dirId: number,
+  noteId: number,
+  body: any
+) => {
+  const userRef = doc(users, userId);
+  const user = await getDoc(userRef);
+  if (!user) {
+    return null;
+  }
+
+  const dirs = user.data()!.dirs;
+
+  Object.entries(body).forEach(([key, value]) => {
+    (dirs[dirId].notes[noteId] as any)[key] = value;
+  });
+
+  await updateDoc(userRef, {
+    dirs: dirs,
+  });
+};

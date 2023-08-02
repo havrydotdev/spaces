@@ -62,3 +62,29 @@ export const deleteNoteFromDB = async (
 
   return res;
 };
+
+export const updateNoteInDB = async (
+  dirId: number,
+  noteId: number,
+  body: any
+) => {
+  const res = await fetch(`/api/dirs/${dirId}/notes/${noteId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  return res;
+};
+
+export const updateDirInDB = async (dirId: number, name: string) => {
+  const res = await fetch(`/api/dirs/${dirId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: name,
+    }),
+  });
+
+  return res;
+};

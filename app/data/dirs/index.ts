@@ -51,3 +51,23 @@ export const deleteDir = async (userId: string, dirId: number) => {
     dirs: dirs,
   });
 };
+
+export const updateDir = async (
+  userId: string,
+  dirId: number,
+  name: string
+) => {
+  const userRef = doc(users, userId);
+  const user = await getDoc(userRef);
+  if (!user) {
+    return null;
+  }
+
+  const dirs = user.data()!.dirs;
+
+  dirs[dirId].name = name;
+
+  await updateDoc(userRef, {
+    dirs: dirs,
+  });
+};
