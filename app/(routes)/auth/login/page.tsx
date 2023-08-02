@@ -16,9 +16,6 @@ export default function SignIn() {
   // get all search params from current url
   const searchParams = useSearchParams();
 
-  // get callback url from search params
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
-
   // get error search param (redirected by auth handler if something goes wrong)
   let errorFromServer = searchParams.get("error");
 
@@ -67,7 +64,6 @@ export default function SignIn() {
         redirect: false,
         email: formToSend.email,
         password: formToSend.password,
-        callbackUrl,
       });
 
       if (!res?.ok) {

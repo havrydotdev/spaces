@@ -22,7 +22,6 @@ import {
 } from "@/server";
 import TrashIcon from "@/public/trash.svg";
 import cn from "classnames";
-import { redirect } from "next/navigation";
 import SettingsIcon from "@/public/settings.svg";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
@@ -46,13 +45,7 @@ export const NotesContext = createContext<{
 });
 
 export default function NotesLayout({ children }: { children: any }) {
-  const session = useSession({
-    required: true,
-    onUnauthenticated() {
-      redirect("/auth/login");
-    },
-  });
-
+  const session = useSession();
   const [dirs, setDirs] = useState<Directory[]>([]);
   const [activeDir, setActiveDir] = useState<number>(0);
   const [activeNote, setActiveNote] = useState<number>(0);
@@ -155,11 +148,11 @@ export default function NotesLayout({ children }: { children: any }) {
   };
 
   const deleteDir = async (dirId: number) => {
+    setDirs((drs) => drs.filter((dr, i) => i !== dirId));
+
     if (dirId === activeDir) {
       setActiveDir(0);
     }
-
-    setDirs((drs) => drs.filter((dr, i) => i !== dirId));
 
     await deleteDirFromDB(dirId);
   };
@@ -176,7 +169,7 @@ export default function NotesLayout({ children }: { children: any }) {
       )
     );
 
-    if (noteId == activeNote) {
+    if (noteId === activeNote) {
       setActiveNote(0);
     }
 
@@ -201,20 +194,24 @@ export default function NotesLayout({ children }: { children: any }) {
                 </div>
               </div>
               <div className="flex flex-col gap-5px mt-[16px] ml-[42px]">
-                {dirs.map((dir, index) => (
-                  <ItemTab
-                    key={index}
-                    onClick={() => {
-                      setActiveDir(index);
-                      setActiveNote(0);
-                    }}
-                    className={cn({
-                      ["bg-[#F8F8F8]"]: index === activeDir,
-                    })}
-                    title={dir.name}
-                    onDelete={() => deleteDir(index)}
-                  />
-                ))}
+                {session.status === "authenticated" ? (
+                  dirs.map((dir, index) => (
+                    <ItemTab
+                      key={index}
+                      onClick={() => {
+                        setActiveDir(index);
+                        setActiveNote(0);
+                      }}
+                      className={cn({
+                        ["bg-[#F8F8F8]"]: index === activeDir,
+                      })}
+                      title={dir.name}
+                      onDelete={() => deleteDir(index)}
+                    />
+                  ))
+                ) : (
+                  <></>
+                )}
                 <div className="flex justify-between text-[18px] font-medium small-caps opacity-[0.5] text-[#242424] mt-[48px]">
                   <h4>Notes</h4>
                 </div>
@@ -256,34 +253,33 @@ export default function NotesLayout({ children }: { children: any }) {
                   </button>
                 </div>
               </div>
-              <div className="fixed bottom-[33px] left-[42px] w-full">
-                <div className="flex justify-between items-center max-w-[325px]">
-                  <div className="flex gap-[12px]">
-                    <Image
-                      src={session.data?.user?.image ?? "/public/user.png"}
-                      width={50}
-                      height={45}
-                      alt="user image"
-                      className="rounded-full"
-                    />
-                    <div>
-                      <h4 className="text-[18px] font-semibold text-[#242424]">
-                        {session.data?.user?.name ?? "Unknown user"}
-                      </h4>
-                      <h5 className="text-[16px] opacity-[0.5] text-[#242424]">
-                        @{session.data?.user?.username ?? "username"}
-                      </h5>
+              {session.status === "authenticated" && (
+                <div className="fixed bottom-[33px] left-[42px] w-full">
+                  <div className="flex justify-between items-center max-w-[325px]">
+                    <div className="flex gap-[12px]">
+                      <Image
+                        src={session.data?.user?.image ?? "/public/user.png"}
+                        width={50}
+                        height={45}
+                        alt="user image"
+                        className="rounded-full"
+                      />
+                      <div>
+                        <h4 className="text-[18px] font-semibold text-[#242424]">
+                          {session.data?.user?.name ?? "Unknown user"}
+                        </h4>
+                        <h5 className="text-[16px] opacity-[0.5] text-[#242424]">
+                          @{session.data?.user?.username ?? "username"}
+                        </h5>
+                      </div>
                     </div>
+                    <SettingsIcon
+                      className="cursor-pointer opacity-[0.5]"
+                      onClick={() => signOut()}
+                    />
                   </div>
-                  <SettingsIcon
-                    className="cursor-pointer opacity-[0.5]"
-                    onClick={() => {
-                      signOut();
-                      redirect("/auth/login");
-                    }}
-                  />
                 </div>
-              </div>
+              )}
             </>
           </div>
           <NotesContext.Provider

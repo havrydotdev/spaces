@@ -2,22 +2,15 @@
 import { prompt } from "@/app/fonts";
 import { AuthInput, CustomButton } from "@/components";
 import { registerUser } from "@/server";
-import { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 
 export default function RegisterPage(): React.JSX.Element {
   const { push } = useRouter();
 
   const { status } = useSession();
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      void push("/notes");
-    }
-  }, [status]);
 
   const [form, setForm] = useState({
     username: "",
@@ -33,6 +26,20 @@ export default function RegisterPage(): React.JSX.Element {
     const { name, value } = event.target;
     setForm({ ...form, [name]: value });
   };
+
+  if (status == "loading") {
+    return (
+      <main className="w-screen flex justify-center">
+        <div className="mx-[30px] sm:min-w-[480px]">
+          <div className="load"></div>
+        </div>
+      </main>
+    );
+  }
+
+  if (status == "authenticated") {
+    push("/notes");
+  }
 
   const onSubmit = async (e: React.FormEvent) => {
     try {

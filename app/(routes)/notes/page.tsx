@@ -1,11 +1,41 @@
 "use client";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { NotesContext } from "./layout";
 import { updateNoteInDB } from "@/server";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const NotesPage = () => {
+  const { push } = useRouter();
+  const session = useSession({
+    required: true,
+    onUnauthenticated() {
+      push("/auth/login");
+    },
+  });
+  const [title, setTitle] = useState<string>("");
+  const [text, setText] = useState<string>("");
   const context = useContext(NotesContext);
-  if (context.isLoading) {
+  useEffect(() => {
+    if (session.status === "authenticated") {
+      if (!context.isLoading) {
+        if (context.dirs.length !== 0) {
+          if (context.dirs.length - 1 >= context.activeDir) {
+            if (context.dirs[context.activeDir].notes.length !== 0) {
+              setTitle(
+                context.dirs[context.activeDir].notes[context.activeNote].title
+              );
+              setText(
+                context.dirs[context.activeDir].notes[context.activeNote].text
+              );
+            }
+          }
+        }
+      }
+    }
+  }, [context, session]);
+
+  if (context.isLoading || session.status === "loading") {
     return <div>Loading...</div>;
   }
 
@@ -20,20 +50,6 @@ const NotesPage = () => {
   if (context.dirs[context.activeDir].notes.length == 0) {
     return <div>Create new note</div>;
   }
-
-  const [newHeader, setNewHeader] = useState<string>(
-    context.dirs[context.activeDir].notes[context.activeNote].title
-  );
-
-  const [newText, setNewText] = useState<string>(
-    context.dirs[context.activeDir].notes[context.activeNote].text
-  );
-
-  useEffect(() => {
-    setNewHeader(
-      context.dirs[context.activeDir].notes[context.activeNote].title
-    );
-  }, [context.activeNote, context.activeDir]);
 
   const editHeader = async () => {
     // map over dirs
@@ -50,7 +66,7 @@ const NotesPage = () => {
                 i === context.activeNote
                   ? // return note with updated title
                     {
-                      title: newHeader,
+                      title: title,
                       text: note.text,
                       image: note.image,
                     }
@@ -63,7 +79,7 @@ const NotesPage = () => {
     );
 
     await updateNoteInDB(context.activeDir, context.activeNote, {
-      title: newHeader,
+      title: title,
     });
   };
 
@@ -83,7 +99,7 @@ const NotesPage = () => {
                   ? // return note with updated title
                     {
                       title: note.title,
-                      text: newText,
+                      text: text,
                       image: note.image,
                     }
                   : // or note
@@ -95,7 +111,7 @@ const NotesPage = () => {
     );
 
     await updateNoteInDB(context.activeDir, context.activeNote, {
-      text: newText,
+      text: text,
     });
   };
 
@@ -112,20 +128,20 @@ const NotesPage = () => {
         </div>
         <div className="flex gap-[15px] mt-[27px] text-[40px] text-[#242424] font-semibold items-center group w-full">
           <input
-            value={newHeader}
-            onChange={(e) => setNewHeader(e.currentTarget.value)}
+            value={title}
+            onChange={(e) => setTitle(e.currentTarget.value)}
             onBlur={() => editHeader()}
             className="w-full mr-[40px] focus:outline-none"
           />
         </div>
         <div className="text-[#242424] text-[20px] w-full">
           <textarea
-            value={newText}
-            onChange={(e) => setNewText(e.currentTarget.value)}
+            value={text}
+            onChange={(e) => setText(e.currentTarget.value)}
             onBlur={() => editText()}
             className="w-full focus:outline-none mt-[30px]"
-            cols={50}
-            rows={10}
+            cols={40}
+            rows={20}
           />
         </div>
       </div>

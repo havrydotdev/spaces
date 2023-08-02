@@ -10,7 +10,7 @@ export const getUserFriendyErrorText = (error: string): string => {
       return "You have to sign up first blablabla";
   }
 
-  return "Unknown error";
+  return error;
 };
 
 /**
