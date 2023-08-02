@@ -4,6 +4,8 @@ import { NotesContext } from "./layout";
 import { updateNoteInDB } from "@/server";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import UploadIcon from "@/public/upload.svg";
+import Image from "next/image";
 
 const NotesPage = () => {
   const { push } = useRouter();
@@ -13,6 +15,7 @@ const NotesPage = () => {
       push("/auth/login");
     },
   });
+  const hiddenFileInput = useRef(null);
   const [title, setTitle] = useState<string>("");
   const [text, setText] = useState<string>("");
   const context = useContext(NotesContext);
@@ -115,6 +118,48 @@ const NotesPage = () => {
     });
   };
 
+  const handleChange = async (event: any) => {
+    if (event.target.files && event.target.files[0]) {
+      const i = event.target.files[0];
+      const body = new FormData();
+      body.append("image", i);
+
+      const res = await fetch(
+        `/api/dirs/${context.activeDir}/notes/${context.activeNote}/image`,
+        {
+          method: "PATCH",
+          body: body,
+        }
+      );
+
+      const url = (await res.json()).url;
+
+      context.setDirs((dirs) =>
+        // map through dirs
+        dirs.map((dir, id) =>
+          // id dir.id === active dir id
+          id === context.activeDir
+            ? {
+                name: dir.name,
+                // return dir with updated notes
+                notes: dir.notes.map((note, idx) =>
+                  // if note id === active note id
+                  idx === context.activeNote
+                    ? {
+                        title: note.title,
+                        text: note.text,
+                        // return note with updated image
+                        image: url,
+                      }
+                    : note
+                ),
+              }
+            : dir
+        )
+      );
+    }
+  };
+
   return (
     <>
       <div className="ml-[44px] w-full">
@@ -140,10 +185,44 @@ const NotesPage = () => {
             onChange={(e) => setText(e.currentTarget.value)}
             onBlur={() => editText()}
             className="w-full focus:outline-none mt-[30px]"
-            cols={40}
-            rows={20}
+            cols={30}
+            rows={10}
           />
         </div>
+        {context.dirs[context.activeDir].notes[context.activeNote].image ===
+          undefined ||
+        context.dirs[context.activeDir].notes[context.activeNote].image ===
+          "" ? (
+          <div className="max-w-[330px] mt-[40px]">
+            <label className="flex justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none">
+              <span className="flex items-center space-x-2">
+                <UploadIcon className="w-6 h-6 text-gray-600" />
+                <span className="font-medium text-gray-600">
+                  Drop files to Add Image, or{" "}
+                  <span className="text-[rgb(37_99_235)] underline">
+                    browse
+                  </span>
+                </span>
+              </span>
+              <input
+                type="file"
+                name="image"
+                className="hidden"
+                onChange={handleChange}
+              />
+            </label>
+          </div>
+        ) : (
+          <div>
+            <img
+              width={200}
+              src={
+                context.dirs[context.activeDir].notes[context.activeNote].image!
+              }
+              alt="Note Image"
+            />
+          </div>
+        )}
       </div>
     </>
   );

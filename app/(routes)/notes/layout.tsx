@@ -27,6 +27,7 @@ import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { ItemTab } from "@/components/ItemTab/ItemTab";
+import { UserProfile } from "@/components";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -217,28 +218,15 @@ export default function NotesLayout({ children }: { children: any }) {
                 </div>
                 <div className="flex flex-col gap-5px mt-[16px]">
                   {dirs[activeDir]?.notes.map((note, index) => (
-                    <div
-                      className={cn(
-                        "flex justify-between items-center h-[41px] w-[325px] rounded-lg dir",
-                        {
-                          ["bg-[#F8F8F8]"]: index === activeNote,
-                        }
-                      )}
+                    <ItemTab
                       key={index}
-                    >
-                      <button
-                        className={cn(
-                          "flex justify-between items-center w-[90%] text-[18px] text-[#242424]"
-                        )}
-                        onClick={() => setActiveNote(index)}
-                      >
-                        <p className="ml-[10px]">{note.title}</p>
-                      </button>
-                      <TrashIcon
-                        className={`mr-[10px] opacity-0 transition-all cursor-pointer`}
-                        onClick={() => deleteNote(activeDir, index)}
-                      />
-                    </div>
+                      onClick={() => setActiveNote(index)}
+                      className={cn({
+                        ["bg-[#F8F8F8]"]: index === activeNote,
+                      })}
+                      title={note.title}
+                      onDelete={() => deleteNote(activeDir, index)}
+                    />
                   ))}
                   <button
                     className={`flex items-center text-[18px] h-[41px] w-[325px] rounded-lg text-[#242424] mt-[15px]`}
@@ -254,31 +242,12 @@ export default function NotesLayout({ children }: { children: any }) {
                 </div>
               </div>
               {session.status === "authenticated" && (
-                <div className="fixed bottom-[33px] left-[42px] w-full">
-                  <div className="flex justify-between items-center max-w-[325px]">
-                    <div className="flex gap-[12px]">
-                      <Image
-                        src={session.data?.user?.image ?? "/public/user.png"}
-                        width={50}
-                        height={45}
-                        alt="user image"
-                        className="rounded-full"
-                      />
-                      <div>
-                        <h4 className="text-[18px] font-semibold text-[#242424]">
-                          {session.data?.user?.name ?? "Unknown user"}
-                        </h4>
-                        <h5 className="text-[16px] opacity-[0.5] text-[#242424]">
-                          @{session.data?.user?.username ?? "username"}
-                        </h5>
-                      </div>
-                    </div>
-                    <SettingsIcon
-                      className="cursor-pointer opacity-[0.5]"
-                      onClick={() => signOut()}
-                    />
-                  </div>
-                </div>
+                <UserProfile
+                  name={session.data.user?.name}
+                  username={session.data.user?.username}
+                  image={session.data.user?.image}
+                  onClick={() => signOut()}
+                />
               )}
             </>
           </div>
