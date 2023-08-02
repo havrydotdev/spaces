@@ -5,7 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { getUser, getUserByEmail } from "@/app/data/users";
 
 export const options: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.JWT_SECRET,
   pages: {
     signIn: "/auth/login",
   },

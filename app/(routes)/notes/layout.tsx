@@ -22,9 +22,9 @@ import {
 } from "@/server";
 import TrashIcon from "@/public/trash.svg";
 import cn from "classnames";
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import SettingsIcon from "@/public/settings.svg";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { ItemTab } from "@/components/ItemTab/ItemTab";
@@ -46,8 +46,13 @@ export const NotesContext = createContext<{
 });
 
 export default function NotesLayout({ children }: { children: any }) {
-  const { push } = useRouter();
-  const session = useSession();
+  const session = useSession({
+    required: true,
+    onUnauthenticated() {
+      redirect("/auth/login");
+    },
+  });
+
   const [dirs, setDirs] = useState<Directory[]>([]);
   const [activeDir, setActiveDir] = useState<number>(0);
   const [activeNote, setActiveNote] = useState<number>(0);
@@ -116,10 +121,6 @@ export default function NotesLayout({ children }: { children: any }) {
         </body>
       </html>
     );
-  }
-
-  if (session.status == "unauthenticated") {
-    push("/");
   }
 
   const addNote = async () => {
@@ -260,7 +261,7 @@ export default function NotesLayout({ children }: { children: any }) {
                   <div className="flex gap-[12px]">
                     <Image
                       src={session.data?.user?.image ?? "/public/user.png"}
-                      width={45}
+                      width={50}
                       height={45}
                       alt="user image"
                       className="rounded-full"
@@ -274,7 +275,13 @@ export default function NotesLayout({ children }: { children: any }) {
                       </h5>
                     </div>
                   </div>
-                  <SettingsIcon className="cursor-pointer" />
+                  <SettingsIcon
+                    className="cursor-pointer opacity-[0.5]"
+                    onClick={() => {
+                      signOut();
+                      redirect("/auth/login");
+                    }}
+                  />
                 </div>
               </div>
             </>

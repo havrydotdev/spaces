@@ -2,7 +2,6 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { options } from "..";
 import { addDir, getAllDirs } from "@/app/data/dirs";
-import { Directory } from "@/types/data";
 
 export const GET = async (req: Request) => {
   const session = await getServerSession(options);
@@ -40,7 +39,12 @@ export const POST = async (req: Request) => {
 
   const res = await addDir(session.user!.id, {
     name: input.name,
-    notes: [],
+    notes: [
+      {
+        title: "New Note",
+        text: "Hello World!",
+      },
+    ],
   });
 
   return NextResponse.json({

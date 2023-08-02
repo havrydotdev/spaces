@@ -6,7 +6,7 @@ import GoogleIcon from "@/public/google.svg";
 import FacebookIcon from "@/public/facebook.svg";
 import { AuthInput } from "@/components/AuthInput/AuthInput";
 import { CustomButton } from "@/components";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getUserFriendyErrorText } from "@/utils";
 
