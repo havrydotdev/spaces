@@ -30,7 +30,7 @@ export const options: NextAuthOptions = {
       return token;
     },
     async signIn({ user, account, profile }) {
-      if (account?.provider == "google") {
+      if (account?.provider == "google" || account?.provider == "facebook") {
         const u = await getUserByEmail(profile?.email);
         if (!u) {
           return "/?error=user_is_not_registered";
