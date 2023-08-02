@@ -33,7 +33,7 @@ export const options: NextAuthOptions = {
       if (account?.provider == "google" || account?.provider == "facebook") {
         const u = await getUserByEmail(profile?.email);
         if (!u) {
-          return "/?error=user_is_not_registered";
+          return "/auth/login/?error=user_is_not_registered";
         }
 
         user.id = u.id;

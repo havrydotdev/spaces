@@ -62,7 +62,7 @@ export default function RegisterPage(): React.JSX.Element {
 
   return (
     <main className="w-screen flex justify-center">
-      <div className="mx-[30px] sm:min-w-[480px] sm:max-w-[540px]">
+      <div className="sm:min-w-[480px] sm:max-w-[600px]">
         <h1
           className={`mt-[90px] ${prompt.className} font-medium text-[50px] ${
             error && "mt-[30px]"
@@ -71,39 +71,47 @@ export default function RegisterPage(): React.JSX.Element {
           Sign-up
         </h1>
         <form onSubmit={onSubmit} className="mt-[70px]">
-          <input name="csrfToken" type="hidden" />
-          <AuthInput
-            placeholder="Email"
-            name="email"
-            type="text"
-            onChange={handleChange}
-          />
-          <AuthInput
-            placeholder="Username"
-            name="username"
-            type="text"
-            onChange={handleChange}
-          />
-          <AuthInput
-            placeholder="Full name"
-            name="name"
-            type="text"
-            className="mt-[15px]"
-            onChange={handleChange}
-          />
-          <AuthInput
-            placeholder="Password"
-            type="password"
-            className="mt-[15px]"
-            onChange={handleChange}
-          />
-          <AuthInput
-            placeholder="Confirm password"
-            type="password"
-            className="mt-[15px] mb-[10px]"
-            name="confirm"
-            onChange={handleChange}
-          />
+          <div className="flex flex-col gap-[15px] mb-[10px]">
+            <AuthInput
+              placeholder="Email"
+              name="email"
+              type="text"
+              onChange={handleChange}
+              className="focus:outline-none"
+              value={form.email}
+            />
+            <AuthInput
+              placeholder="Username"
+              name="username"
+              type="text"
+              onChange={handleChange}
+              className="focus:outline-none"
+              value={form.username}
+            />
+            <AuthInput
+              placeholder="Full name"
+              name="name"
+              type="text"
+              onChange={handleChange}
+              className="focus:outline-none"
+              value={form.name}
+            />
+            <AuthInput
+              placeholder="Password"
+              type="password"
+              onChange={handleChange}
+              className="focus:outline-none"
+              value={form.password}
+            />
+            <AuthInput
+              placeholder="Confirm password"
+              type="password"
+              name="confirm"
+              className="focus:outline-none"
+              onChange={handleChange}
+              value={form.confirm}
+            />
+          </div>
           <Link
             className="small-caps text-[23px] text-[#242424] opacity-[0.5]"
             href="/auth/login"

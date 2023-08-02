@@ -104,12 +104,13 @@ export default function SignIn() {
           <AuthInput
             placeholder="Email"
             onChange={handleChange}
+            className="focus:outline-none"
             value={formValues.email}
           />
           <AuthInput
             placeholder="Password"
             type="password"
-            className="mt-[21px]"
+            className="mt-[21px] focus:outline-none"
             onChange={handleChange}
             value={formValues.password}
           />

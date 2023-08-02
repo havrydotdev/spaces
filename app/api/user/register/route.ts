@@ -20,6 +20,7 @@ export const POST = async (req: Request) => {
     username: body.username,
     name: body.name,
     password: body.password,
+    email: body.email,
   });
 
   return NextResponse.json({
