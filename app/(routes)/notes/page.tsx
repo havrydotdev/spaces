@@ -193,17 +193,21 @@ const NotesPage = () => {
         undefined ||
       context.dirs[context.activeDir].notes[context.activeNote].image === "" ? (
         <div className="max-w-[330px] mt-[40px]">
-          <UploadIcon className="w-6 h-6 text-gray-600" />
-          <span className="font-medium text-gray-600">
-            Drop files to Add Image, or{" "}
-            <span className="text-[rgb(37_99_235)] underline">browse</span>
-          </span>
-          <input
-            type="file"
-            name="image"
-            className="hidden"
-            onChange={handleChange}
-          />
+          <label className="flex justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none">
+            <span className="flex items-center space-x-2">
+              <UploadIcon className="w-6 h-6 text-gray-600" />
+              <span className="font-medium text-gray-600">
+                Drop files to Add Image, or{" "}
+                <span className="text-[rgb(37_99_235)] underline">browse</span>
+              </span>
+            </span>
+            <input
+              type="file"
+              name="image"
+              className="hidden"
+              onChange={handleChange}
+            />
+          </label>
         </div>
       ) : (
         <div>
