@@ -20,11 +20,8 @@ import {
   deleteDirFromDB,
   deleteNoteFromDB,
 } from "@/server";
-import TrashIcon from "@/public/trash.svg";
 import cn from "classnames";
-import SettingsIcon from "@/public/settings.svg";
 import { signOut, useSession } from "next-auth/react";
-import Image from "next/image";
 import Link from "next/link";
 import { ItemTab } from "@/components/ItemTab/ItemTab";
 import { UserProfile } from "@/components";
@@ -80,40 +77,10 @@ export default function NotesLayout({ children }: { children: any }) {
 
   if (error) {
     return (
-      <html lang="en">
-        <body className={sf_pro.className}>
-          <div>{error.message}</div>
-          <AuthProvider>{children}</AuthProvider>
-        </body>
-      </html>
-    );
-  }
-
-  if (session.status == "loading" || isLoading) {
-    return (
-      <html lang="en">
-        <body className={sf_pro.className}>
-          <div className="flex">
-            <div className="min-w-[414px] border-r-[1px] border-[#D4D4D4] border-solid h-screen m-0">
-              <Link className="inline-block mt-[36px] ml-[42px]" href="/">
-                <PlanetIcon />
-              </Link>
-              <div className="load"></div>
-            </div>
-            <NotesContext.Provider
-              value={{
-                dirs: dirs,
-                activeDir: activeDir,
-                activeNote: activeNote,
-                isLoading: isLoading,
-                setDirs: setDirs,
-              }}
-            >
-              <AuthProvider>{children}</AuthProvider>
-            </NotesContext.Provider>
-          </div>
-        </body>
-      </html>
+      <>
+        <div>{error.message}</div>
+        <AuthProvider>{children}</AuthProvider>
+      </>
     );
   }
 
@@ -178,92 +145,88 @@ export default function NotesLayout({ children }: { children: any }) {
   };
 
   return (
-    <html lang="en">
-      <body className={sf_pro.className}>
-        <div className="flex">
-          <div className="min-w-[414px] border-r-[1px] border-[#D4D4D4] border-solid h-screen m-0">
-            <Link className="inline-block mt-[36px] ml-[42px]" href="/">
-              <PlanetIcon />
-            </Link>
-            <>
-              <div className="flex mt-[46px] w-[325px] ml-[42px] text-[18px] font-medium opacity-[0.5] text-[#242424] small-caps justify-between">
-                <h4>Lists</h4>
-                <div className="flex flex-col justify-center">
-                  <button onClick={addDir}>
-                    <PlusIcon className="cursor-pointer" />
-                  </button>
-                </div>
+    <div className="flex">
+      <div className="min-w-[414px] border-r-[1px] border-[#D4D4D4] border-solid h-screen m-0">
+        <Link className="inline-block mt-[36px] ml-[42px]" href="/">
+          <PlanetIcon />
+        </Link>
+        {isLoading ? (
+          <div className="load"></div>
+        ) : (
+          <>
+            <div className="flex mt-[46px] w-[325px] ml-[42px] text-[18px] font-medium opacity-[0.5] text-[#242424] small-caps justify-between">
+              <h4>Lists</h4>
+              <div className="flex flex-col justify-center">
+                <button onClick={addDir}>
+                  <PlusIcon className="cursor-pointer" />
+                </button>
               </div>
-              <div className="flex flex-col gap-5px mt-[16px] ml-[42px]">
-                {session.status === "authenticated" ? (
-                  dirs.map((dir, index) => (
-                    <ItemTab
-                      key={index}
-                      onClick={() => {
-                        setActiveDir(index);
-                        setActiveNote(0);
-                      }}
-                      className={cn({
-                        ["bg-[#F8F8F8]"]: index === activeDir,
-                      })}
-                      title={dir.name}
-                      onDelete={() => deleteDir(index)}
-                    />
-                  ))
-                ) : (
-                  <></>
-                )}
-                <div className="flex justify-between text-[18px] font-medium small-caps opacity-[0.5] text-[#242424] mt-[48px]">
-                  <h4>Notes</h4>
-                </div>
-                <div className="flex flex-col gap-5px mt-[16px]">
-                  {dirs[activeDir]?.notes.map((note, index) => (
-                    <ItemTab
-                      key={index}
-                      onClick={() => setActiveNote(index)}
-                      className={cn({
-                        ["bg-[#F8F8F8]"]: index === activeNote,
-                      })}
-                      title={note.title}
-                      onDelete={() => deleteNote(activeDir, index)}
-                    />
-                  ))}
-                  <button
-                    className={`flex items-center text-[18px] h-[41px] w-[325px] rounded-lg text-[#242424] mt-[15px]`}
-                    onClick={addNote}
-                  >
-                    <div className="flex gap-[10px] rounded-lg border-[1px] border-[#BEBEBE] h-[41px] w-[325px] items-center">
-                      <NewNoteIcon className="ml-[10px]" />
-                      <p className="text-[#BEBEBE] text-[20px] font-normal">
-                        New note
-                      </p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-              {session.status === "authenticated" && (
-                <UserProfile
-                  name={session.data.user?.name}
-                  username={session.data.user?.username}
-                  image={session.data.user?.image}
-                  onClick={() => signOut()}
+            </div>
+            <div className="flex flex-col gap-5px mt-[16px] ml-[42px]">
+              {dirs.map((dir, index) => (
+                <ItemTab
+                  key={index}
+                  onClick={() => {
+                    setActiveDir(index);
+                    setActiveNote(0);
+                  }}
+                  className={cn({
+                    ["bg-[#F8F8F8]"]: index === activeDir,
+                  })}
+                  title={dir.name}
+                  onDelete={() => deleteDir(index)}
                 />
-              )}
-            </>
-          </div>
-          <NotesContext.Provider
-            value={{
-              dirs: dirs,
-              activeDir: activeDir,
-              activeNote: activeNote,
-              isLoading: isLoading,
-              setDirs: setDirs,
-            }}
-          >
-            <AuthProvider>{children}</AuthProvider>
-          </NotesContext.Provider>
-        </div>
-      </body>
-    </html>
+              ))}
+              <div className="flex justify-between text-[18px] font-medium small-caps opacity-[0.5] text-[#242424] mt-[48px]">
+                <h4>Notes</h4>
+              </div>
+              <div className="flex flex-col gap-5px mt-[16px]">
+                {dirs[activeDir]?.notes.map((note, index) => (
+                  <ItemTab
+                    key={index}
+                    onClick={() => setActiveNote(index)}
+                    className={cn({
+                      ["bg-[#F8F8F8]"]: index === activeNote,
+                    })}
+                    title={note.title}
+                    onDelete={() => deleteNote(activeDir, index)}
+                  />
+                ))}
+                <button
+                  className={`flex items-center text-[18px] h-[41px] w-[325px] rounded-lg text-[#242424] mt-[15px]`}
+                  onClick={addNote}
+                >
+                  <div className="flex gap-[10px] rounded-lg border-[1px] border-[#BEBEBE] h-[41px] w-[325px] items-center">
+                    <NewNoteIcon className="ml-[10px]" />
+                    <p className="text-[#BEBEBE] text-[20px] font-normal">
+                      New note
+                    </p>
+                  </div>
+                </button>
+              </div>
+            </div>
+            {session.status === "authenticated" && (
+              <UserProfile
+                name={session.data.user?.name}
+                username={session.data.user?.username}
+                image={session.data.user?.image}
+                onClick={() => signOut()}
+              />
+            )}
+          </>
+        )}
+      </div>
+      <NotesContext.Provider
+        value={{
+          dirs: dirs,
+          activeDir: activeDir,
+          activeNote: activeNote,
+          isLoading: isLoading,
+          setDirs: setDirs,
+        }}
+      >
+        <AuthProvider>{children}</AuthProvider>
+      </NotesContext.Provider>
+    </div>
   );
 }

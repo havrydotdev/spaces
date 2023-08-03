@@ -38,7 +38,7 @@ export const options: NextAuthOptions = {
 
         user.id = u.id;
         user.username = u.username;
-        if (!user.image || user.image == "") {
+        if (u.image && u.image !== "") {
           user.image = u.image;
         }
       }

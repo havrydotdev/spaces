@@ -88,3 +88,16 @@ export const updateDirInDB = async (dirId: number, name: string) => {
 
   return res;
 };
+
+export const updateNoteImage = async (
+  dirId: number,
+  noteId: number,
+  body: any
+): Promise<Response> => {
+  const res = await fetch(`/api/dirs/${dirId}/notes/${noteId}/image`, {
+    method: "PATCH",
+    body: body,
+  });
+
+  return res;
+};

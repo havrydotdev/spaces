@@ -6,13 +6,13 @@ import GoogleIcon from "@/public/google.svg";
 import FacebookIcon from "@/public/facebook.svg";
 import { AuthInput } from "@/components/AuthInput/AuthInput";
 import { CustomButton } from "@/components";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getUserFriendyErrorText } from "@/utils";
 
 export default function SignIn() {
   const session = useSession();
-  const { push } = useRouter();
+  const { push, replace } = useRouter();
   // get all search params from current url
   const searchParams = useSearchParams();
 
@@ -25,6 +25,13 @@ export default function SignIn() {
     password: "",
   });
 
+  useEffect(() => {
+    if (session.status === "authenticated") {
+      // use window instead of push so notes page`s state will be updated
+      window.location.href = "/notes";
+    }
+  }, [session]);
+
   if (session.status == "loading") {
     return (
       <main className="w-screen flex justify-center">
@@ -33,10 +40,6 @@ export default function SignIn() {
         </div>
       </main>
     );
-  }
-
-  if (session.status == "authenticated") {
-    push("/notes");
   }
 
   /**
